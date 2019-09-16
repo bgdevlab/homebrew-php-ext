@@ -41,7 +41,7 @@ class CurlOracleAuthDownloadStrategy < CurlDownloadStrategy
 
   private
 
-  def _fetch(url:, resolved_url:)
+  def _fetch(url:, **)
     escape_data = ->(d) { ["-d", URI.encode_www_form([d])] }
 
     meta[:cookies] = self.class.cookies
@@ -60,30 +60,32 @@ class CurlOracleAuthDownloadStrategy < CurlDownloadStrategy
     raise CurlDownloadStrategyError, "Invalid Oracle response." if m.nil?
     oam_req = m.captures.first
 
-    m = /name="site2pstoretoken" value="([^"]+)"/.match(req_output)
-    raise CurlDownloadStrategyError, "Invalid Oracle response." if m.nil?
-    site2pstoretoken = m.captures.first
+    # m = /name="site2pstoretoken" value="([^"]+)"/.match(req_output)
+    # raise CurlDownloadStrategyError, "Invalid Oracle response." if m.nil?
+    # site2pstoretoken = m.captures.first
 
     m = /name="request_id" value="([^"]+)"/.match(req_output)
     raise CurlDownloadStrategyError, "Invalid Oracle response." if m.nil?
     request_id = m.captures.first
 
     data = {
-      "locale" => "",
-      "OAM_REQ" => oam_req,
-      "password" => password,
-      "request_id" => request_id,
-      "site2pstoretoken" => site2pstoretoken,
-      "ssousername" => username,
-      "v" => "v1.4"
+      "locale"           => "",
+      "OAM_REQ"          => oam_req,
+      "password"         => password,
+      "request_id"       => request_id,
+      # "site2pstoretoken" => site2pstoretoken,
+      "ssousername"      => username,
+      "v"                => "v1.4",
     }
 
-    curl_download(
+    temporary_path.dirname.mkpath
+    curl(
+      "--location", "--remote-time", "--continue-at", 0,
+      "--output", temporary_path,
       "-b", self.class.cookie_jar,
       "-c", self.class.cookie_jar,
       *data.flat_map(&escape_data),
-      "https://login.oracle.com/oam/server/sso/auth_cred_submit",
-      :to => temporary_path
+      "https://login.oracle.com/oam/server/sso/auth_cred_submit"
     )
 
     auth_fail = false
