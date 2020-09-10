@@ -1,12 +1,13 @@
-require File.expand_path("../lib/php_extension_formula", __dir__)
+require_relative "../lib/php_extension_formula"
 
-class PhpAT71Imap < PhpExtensionFormula
+class PhpAT73Imap < PhpExtensionFormula
   extension_dsl "IMAP Extension"
 
-  conflicts_with "php@7.1-recode", :because => "because both share the same internal symbols"
+  conflicts_with "php-recode", because: "because both share the same internal symbols"
 
   depends_on "imap-uw"
   depends_on "openssl@1.1"
+  depends_on "krb5"
 
   configure_arg %W[
     --with-imap=#{Formula["imap-uw"].opt_prefix}

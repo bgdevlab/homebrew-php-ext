@@ -1,4 +1,7 @@
 class PhpExtensionFormula < Formula
+  desc "PHP Extension"
+  homepage "https://www.php.net/"
+
   def initialize(*)
     super
     active_spec.owner = php_parent.stable.owner
@@ -14,7 +17,7 @@ class PhpExtensionFormula < Formula
   end
 
   def post_install
-    ext_config_path = etc/"php"/php_parent.php_version/"conf.d"/"ext-#{extension}.ini"
+    ext_config_path = etc/"php"/php_parent.version.major_minor/"conf.d"/"ext-#{extension}.ini"
     if ext_config_path.exist?
       inreplace ext_config_path,
         /#{extension_type}=.*$/, "#{extension_type}=#{opt_lib/module_path}/#{extension}.so"
@@ -33,11 +36,7 @@ class PhpExtensionFormula < Formula
 
   private
 
-  delegate [ # rubocop:disable Layout/AlignHash
-    :php_parent,
-    :extension,
-    :configure_args,
-  ] => :"self.class"
+  delegate [:php_parent, :extension, :configure_args] => :"self.class"
 
   def extension_type
     # extension or zend_extension
@@ -45,7 +44,7 @@ class PhpExtensionFormula < Formula
   end
 
   def module_path
-    extension_dir = Utils.popen_read("#{php_parent.opt_bin/"php-config"} --extension-dir").chomp
+    extension_dir = Utils.safe_popen_read(php_parent.opt_bin/"php-config", "--extension-dir").chomp
     php_basename = File.basename(extension_dir)
     "php/#{php_basename}"
   end
@@ -79,7 +78,7 @@ class PhpExtensionFormula < Formula
         --with-php-config=#{php_parent.opt_bin/"php-config"}
       ]
 
-      desc "#{description} for PHP #{php_parent.php_version}" unless description.nil?
+      desc "#{description} for PHP #{php_parent.version.major_minor}" unless description.nil?
 
       homepage php_parent.homepage + extension
       url php_parent.stable.url

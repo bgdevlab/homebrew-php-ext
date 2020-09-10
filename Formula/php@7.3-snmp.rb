@@ -1,6 +1,6 @@
-require File.expand_path("../lib/php_extension_formula", __dir__)
+require_relative "../lib/php_extension_formula"
 
-class PhpAT71Snmp < PhpExtensionFormula
+class PhpAT73Snmp < PhpExtensionFormula
   extension_dsl "SNMP Extension"
 
   depends_on "net-snmp"
